@@ -26,15 +26,26 @@
                   (пример T0:1060CF59010800E3:24.06;T1:109ABE59010800FE:24.56;)
 
  **/
-#define DEBUG 0 // вывод в консоль
 
-#define TELEGRAMM 1 // Отправка в телегу
+/// Адрессация епрома
+//10 - ConfigFlag - Если есть то конфиг писался
+//21,22,23,24 - ServerIP
+//100 - Время БизиТаймера 
+//102 - Влажность для включения вытяжки
+//103 - Температура для закрытия врат
+//150-159  - Тест - Название первой кнопки
+
+ 
+#define DEBUG 1 // вывод в консоль
+
+#define TELEGRAMM 0 // Отправка в телегу
 
 #include "SPI.h"
 #include "Ethernet.h"
 //#include "Arduino.h"
 #include "WebServer.h" // Webduino (https://github.com/sirleech/Webduino)
 #include <avr/wdt.h>
+#include <EEPROM.h>
 
 #include "DHT.h"
 #define DHTPIN1 2     // Digital pin connected to the DHT sensor
@@ -113,13 +124,15 @@ String endText;
 String htmlText;
 
 const char data_message[] PROGMEM = {"Hello!"};
-//#define BASE_TEXT "<!DOCTYPE html><style>html{background: #cee2e1; /* Old browsers */background: -webkit-linear-gradient(top,  #6ec1e4 0%,#ffffff 100%); background: linear-gradient(to bottom,  #6ec1e4 0%,#ffffff 100%); background-repeat:  no-repeat;background-size:  cover;div.buttons{float: left;}font-family: Verdana,Helvetica,Sans;color: #666;}a{text-decoration: none; color: #666; }.bold{color:  #000;}a:visited{color: #ffffff;}.base{max-width: 900px; margin: 0 auto;}.header{height: 120px;}.logo{float: left;  font-size: 22px;}.menu{float:right;color: #ffffff; margin-top: 56px}.content{border:  #666 solid 1px;border-radius: 0px;padding: 6px;background-color:  #ffffff;}.inset {color: #ffffff;text-shadow: -1px -1px 1px #000, 1px 1px 1px #fff;}ul.hr {margin: 0; padding: 2px; }ul.hr li {display: inline; border-right: 1px solid #000; padding-right: 6px;text-transform:  uppercase;font-weight:  400;}ul.hr li:last-child { border-right: none;}a.knopka {float: left;color: #fff;text-decoration: none; user-select: none; padding: .7em 1.5em; margin-right: 10px; margin-bottom: 10px; outline: none; } a.label {float: left;color: #fff;text-decoration: none; user-select: none; padding: .7em 1em; margin-right: 3px; margin-bottom: 10px; outline: none; } a.knopka:hover { background: rgb(232,95,76); } .blue {background: rgb(56, 162, 212); } .red { background: rgb(212,75,56); } a.knopka:active { background: rgb(152,15,0); } </style><html><head><title>CARWASH360</title><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"></head><body><div class=\"base\"><div class=\"header\"><div class=\"logo\"><h1 class=\"inset\">CARWASH360</h1></div><div class=\"menu\"><ul class=\"hr inset\"><a href=\"/\"><li>Главная</li></a><a href=\"/help\"><li>Помощь</li></a><a href=\"/contacts\"><li>Контакты</li></a></ul></div></div><div class=\"content\">"
+//#define BASE_TEXT "<!DOCTYPE html><style>html{background: #cee2e1; /* Old browsers */background: -webkit-linear-gradient(top,  #6ec1e4 0%,#ffffff 100%); background: linear-gradient(to bottom,  #6ec1e4 0%,#ffffff 100%); background-repeat:  no-repeat;background-size:  cover;div.buttons{float: left;}font-family: Verdana,Helvetica,Sans;color: #666;}a{text-decoration: none; color: #666; }.bold{color:  #000;}a:visited{color: #ffffff;}.base{max-width: 900px; margin: 0 auto;}.header{height: 120px;}.logo{float: left;  font-size: 22px;}.menu{float:right;color: #ffffff; margin-top: 56px}.content{border:  #666 solid 1px;border-radius: 0px;padding: 6px;background-color:  #ffffff;}.inset {color: #ffffff;text-shadow: -1px -1px 1px #000, 1px 1px 1px #fff;}ul.hr {margin: 0; padding: 2px; }ul.hr li {display: inline; border-right: 1px solid #000; padding-right: 6px;text-transform:  uppercase;font-weight:  400;}ul.hr li:last-child { border-right: none;}a.knopka {float: left;color: #fff;text-decoration: none; user-select: none; padding: .7em 1.5em; margin-right: 10px; margin-bottom: 10px; outline: none; } a.label {float: left;color: #fff;text-decoration: none; user-select: none; padding: .7em 1em; margin-right: 3px; margin-bottom: 10px; outline: none; } a.knopka:hover { background: rgb(232,95,76); } .blue {background: rgb(56, 162, 212); } .red { background: rgb(212,75,56); } a.knopka:active { background: rgb(152,15,0); } </style><html><head><title>CARWASH360</title><link rel=\"icon\" href=\"http://carwash360.ru/wp-content/uploads/2019/10/cropped-favicon-32x32.png\" sizes=\"32x32\"><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"></head><body><div class=\"base\"><div class=\"header\"><div class=\"logo\"><h1 class=\"inset\">CARWASH360</h1></div><div class=\"menu\"><ul class=\"hr inset\"><a href=\"/\"><li>Главная</li></a><a href=\"/help\"><li>Помощь</li></a><a href=\"/setup\"><li>Настройки</li></a></ul></div></div><div class=\"content\">"
 #define VERSION_STRING "2.0"
 #define COMPILE_DATE_STRING "2021-03-25"
 
 
 P(location_info) = "Controller - CarWash360";
 P(pin_info) = "D2 - DHT-11, D3 - DHT-11 <br> <br>D44-D51 - outputs";
+P(header) = "<!DOCTYPE html><style>html{background: #cee2e1; /* Old browsers */background: -webkit-linear-gradient(top,  #6ec1e4 0%,#ffffff 100%); background: linear-gradient(to bottom,  #6ec1e4 0%,#ffffff 100%); background-repeat:  no-repeat;background-size:  cover;div.buttons{float: left;}font-family: Verdana,Helvetica,Sans;color: #666;}a{text-decoration: none; color: #666; }.bold{color:  #000;}a:visited{color: #ffffff;}.base{max-width: 900px; margin: 0 auto;}.header{height: 120px;}.logo{float: left;  font-size: 22px;}.menu{float:right;color: #ffffff; margin-top: 56px}.content{border:  #666 solid 1px;border-radius: 0px;padding: 6px;background-color:  #ffffff;}.inset {color: #ffffff;text-shadow: -1px -1px 1px #000, 1px 1px 1px #fff;}ul.hr {margin: 0; padding: 2px; }ul.hr li {display: inline; border-right: 1px solid #000; padding-right: 6px;text-transform:  uppercase;font-weight:  400;}ul.hr li:last-child { border-right: none;}a.knopka {float: left;color: #fff;text-decoration: none; user-select: none; padding: .7em 1.5em; margin-right: 10px; margin-bottom: 10px; outline: none; } a.label {float: left;color: #fff;text-decoration: none; user-select: none; padding: .7em 1em; margin-right: 3px; margin-bottom: 10px; outline: none; } a.knopka:hover { background: rgb(232,95,76); } .blue {background: rgb(56, 162, 212); } .red { background: rgb(212,75,56); } a.knopka:active { background: rgb(152,15,0); } </style><html><head><title>CARWASH360</title><link rel=\"icon\" href=\"http://carwash360.ru/wp-content/uploads/2019/10/cropped-favicon-32x32.png\" sizes=\"32x32\"><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"></head><body><div class=\"base\"><div class=\"header\"><div class=\"logo\"><h1 class=\"inset\">CARWASH360</h1></div><div class=\"menu\"><ul class=\"hr inset\"><a href=\"/\"><li>Главная</li></a><a href=\"/help\"><li>Помощь</li></a><a href=\"/setup\"><li>Настройки</li></a></ul></div></div><div class=\"content\">";
+  
 P(version_info) = VERSION_STRING ". Compile date: " COMPILE_DATE_STRING;
 P(footer) = "</div></body></html>";
 
@@ -178,7 +191,7 @@ void setup() {
   //  Ethernet.begin(mac, ip); // Инициализируем Ethernet Shield
   // give the Ethernet shield a second to initialize:
   delay(5000);
-
+  
   //DHCP НЕ потребовался. Пока отключим
   // Но оставим код.
 #if (DEBUG == 1)
@@ -224,7 +237,8 @@ void setup() {
   webserver.addCommand("wash", &washRequest); // Обработка комманд на включение и выключение режимов мойки
   webserver.addCommand("gate", &gateRequest); // Обработка комманд на открытие и закрытие ворот
   webserver.addCommand("light", &lightRequest); // Обработка комманд на включение и выключение света
-  webserver.addCommand("help", &helpRequest); // Обработка комманд на включение и выключение света
+  webserver.addCommand("help", &helpRequest); // Обработка комманд показа помощи
+  webserver.addCommand("setup", &setupRequest); // Обработка комманд Показа и сохранения сетапа
 
 
   webserver.begin();

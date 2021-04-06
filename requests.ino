@@ -257,10 +257,71 @@ void stateRequest(WebServer &server, WebServer::ConnectionType type, char *url_t
   strcpy (gParamBuffer, "ALL");
   commandsStatus(server);
 }
+
 void helpRequest(WebServer &server, WebServer::ConnectionType type, char *url_tail, bool tail_complete)
 {
   strcpy (gParamBuffer, "ALL");
   commandsHelp(server);
+}
+
+void setupRequest(WebServer &server, WebServer::ConnectionType type, char *url_tail, bool tail_complete)
+{
+  URLPARAM_RESULT rc;
+  char name[NAMELEN];
+  int  name_len;
+  int validRequest = 0;
+  char value[VALUELEN];
+  int value_len;
+  int chousenPin;
+
+  server.httpSuccess();  // this line sends the standard "we're all OK" headers back to the browser
+
+  /* if we're handling a GET or POST, we can output our data here.
+    For a HEAD request, we just stop after outputting headers. */
+  if (type == WebServer::HEAD) {
+    commandSetupForm(server);
+  }
+
+
+  if (strlen(url_tail)) {
+    Serial.println(url_tail);
+
+    while (strlen(url_tail)) // Разбор URI на составные части (выборка параметров)
+    {
+      rc = server.nextURLparam(&url_tail, name, NAMELEN, value, VALUELEN);
+      if (rc == URLPARAM_EOS) {
+      } else // Получили параметр (name) и его значение (value)
+      {
+        if (strcmp(name, "token") == 0) {
+          if (strcmp(value, "ElChupacabra") == 0) {
+            validRequest = 1;
+          } else {
+            errorResponse(server, "wrong token");
+          }
+        }
+        Serial.print(name);
+        Serial.print(" - ");
+        Serial.println(value);
+        
+        if (validRequest == 1) {
+
+          if (strcmp(name, "action") == 0) {
+            if (strcmp(value, "on") == 0) {
+
+            } else  if (strcmp(value, "off") == 0) {
+
+            } else {
+              errorResponse(server, "wrong action");
+            }
+          }
+        }
+      }
+    }
+  } else {
+     Serial.println("NoParams");
+     commandSetupForm(server);
+  }
+
 }
 
 /**********************************************************************************************************************
@@ -269,7 +330,7 @@ void helpRequest(WebServer &server, WebServer::ConnectionType type, char *url_ta
 void infoRequest(WebServer &server, WebServer::ConnectionType type, char *url_tail, bool tail_complete)
 {
 
-  server.print(F("<!DOCTYPE html><style>html{background: #cee2e1; /* Old browsers */background: -webkit-linear-gradient(top,  #6ec1e4 0%,#ffffff 100%); background: linear-gradient(to bottom,  #6ec1e4 0%,#ffffff 100%); background-repeat:  no-repeat;background-size:  cover;div.buttons{float: left;}font-family: Verdana,Helvetica,Sans;color: #666;}a{text-decoration: none; color: #666; }.bold{color:  #000;}a:visited{color: #ffffff;}.base{max-width: 900px; margin: 0 auto;}.header{height: 120px;}.logo{float: left;  font-size: 22px;}.menu{float:right;color: #ffffff; margin-top: 56px}.content{border:  #666 solid 1px;border-radius: 0px;padding: 6px;background-color:  #ffffff;}.inset {color: #ffffff;text-shadow: -1px -1px 1px #000, 1px 1px 1px #fff;}ul.hr {margin: 0; padding: 2px; }ul.hr li {display: inline; border-right: 1px solid #000; padding-right: 6px;text-transform:  uppercase;font-weight:  400;}ul.hr li:last-child { border-right: none;}a.knopka {float: left;color: #fff;text-decoration: none; user-select: none; padding: .7em 1.25em; margin-right: 2px; margin-bottom: 10px; outline: none; } a.label {float: left;color: #fff;text-decoration: none; user-select: none; padding: .7em 1em; margin-right: 0px; margin-bottom: 10px; outline: none; } a.knopka:hover { background: rgb(232,95,76); } .blue {background: rgb(56, 162, 212); } .red { background: rgb(212,75,56); } a.knopka:active { background: rgb(152,15,0); } </style><html><head><title>CARWASH360</title><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"></head><body><div class=\"base\"><div class=\"header\"><div class=\"logo\"><h1 class=\"inset\">CARWASH360</h1></div><div class=\"menu\"><ul class=\"hr inset\"><a href=\"/\"><li>Главная</li></a><a href=\"/help\"><li>Помощь</li></a><a href=\"/contacts\"><li>Контакты</li></a></ul></div></div><div class=\"content\">"));
+  server.print(F("<!DOCTYPE html><style>html{background: #cee2e1; /* Old browsers */background: -webkit-linear-gradient(top,  #6ec1e4 0%,#ffffff 100%); background: linear-gradient(to bottom,  #6ec1e4 0%,#ffffff 100%); background-repeat:  no-repeat;background-size:  cover;div.buttons{float: left;}font-family: Verdana,Helvetica,Sans;color: #666;}a{text-decoration: none; color: #666; }.bold{color:  #000;}a:visited{color: #ffffff;}.base{max-width: 900px; margin: 0 auto;}.header{height: 120px;}.logo{float: left;  font-size: 22px;}.menu{float:right;color: #ffffff; margin-top: 56px}.content{border:  #666 solid 1px;border-radius: 0px;padding: 6px;background-color:  #ffffff;}.inset {color: #ffffff;text-shadow: -1px -1px 1px #000, 1px 1px 1px #fff;}ul.hr {margin: 0; padding: 2px; }ul.hr li {display: inline; border-right: 1px solid #000; padding-right: 6px;text-transform:  uppercase;font-weight:  400;}ul.hr li:last-child { border-right: none;}a.knopka {float: left;color: #fff;text-decoration: none; user-select: none; padding: .7em 1.25em; margin-right: 2px; margin-bottom: 10px; outline: none; } a.label {float: left;color: #fff;text-decoration: none; user-select: none; padding: .7em 1em; margin-right: 0px; margin-bottom: 10px; outline: none; } a.knopka:hover { background: rgb(232,95,76); } .blue {background: rgb(56, 162, 212); } .red { background: rgb(212,75,56); } a.knopka:active { background: rgb(152,15,0); } </style><html><head><title>CARWASH360</title><link rel=\"icon\" href=\"http://carwash360.ru/wp-content/uploads/2019/10/cropped-favicon-32x32.png\" sizes=\"32x32\"><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"></head><body><div class=\"base\"><div class=\"header\"><div class=\"logo\"><h1 class=\"inset\">CARWASH360</h1></div><div class=\"menu\"><ul class=\"hr inset\"><a href=\"/\"><li>Главная</li></a><a href=\"/help\"><li>Помощь</li></a><a href=\"/setup\"><li>Настройки</li></a></ul></div></div><div class=\"content\">"));
   server.print(F("IP:"));
   server.print(Ethernet.localIP());
   server.print("<br>Location:");

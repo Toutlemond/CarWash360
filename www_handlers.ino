@@ -127,10 +127,43 @@ void commandsStatus(WebServer &server) {
   server.print(F("}"));
   server.print(F("}"));
 }
+void commandSetupForm(WebServer &server) {
+  server.printP(header);
+  server.print(F("<form method=\"GET\" action=\"/setsrvip\">\n"));
+  server.print(F("<h4>Настройки контроллера</h4>\n"));
+  server.print(F("<hr>\n"));
+  server.print(F("<p>Новый ip адрес терминала: <span class=\"bold\"><input style=\"width: 22px;\" type=\"text\" name=\"srvip1\">.\n"));
+  server.print(F("<input style=\"width: 22px;\" type=\"text\" name=\"srvip2\">.\n"));
+  server.print(F("<input style=\"width: 22px;\" type=\"text\" name=\"srvip3\">.\n"));
+  server.print(F("<input style=\"width: 22px;\" type=\"text\" name=\"srvip4\"></span></p>\n"));
+  server.print(F("</span></p>\n"));
+
+  server.print(F("<p>Время BusyTimer (сек) -  <span class=\"bold\">.\n"));
+  server.print(F("<input style=\"width: 120px;\" value =\"180\" type=\"text\" name=\"busytimer\">.\n"));
+  server.print(F("</span></p>\n"));
+
+  server.print(F("<p>Пороговое значение Логической единицы -  <span class=\"bold\">.\n"));
+  server.print(F("<input style=\"width: 120px;\" value =\"35\" type=\"text\" name=\"humidon\">.\n"));
+  server.print(F("</span></p>\n"));
+
+  server.print(F("<p>Влажность включения вытяжки (%) -  <span class=\"bold\">.\n"));
+  server.print(F("<input style=\"width: 120px;\" value =\"75\" type=\"text\" name=\"humidon\">.\n"));
+  server.print(F("</span></p>\n"));
+
+  server.print(F("<p>Температура закрытия ворот (гр.С.) -  <span class=\"bold\">.\n"));
+  server.print(F("<input style=\"width: 120px;\" value =\"5\" type=\"text\" name=\"gatetemp\">.\n"));
+  server.print(F("</span></p>\n"));
+  // Далее завершение формы
+  server.print(F("<input type=\"submit\" value=\"Сохранить\">\n"));
+  server.print(F("</form>\n"));
+  server.printP(version_info);
+  server.printP(footer);
+
+}
 void commandsHelp(WebServer &server) {
   //server.print("<html><head><title>CARWASH360</title><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"></head>\n");
 
-  server.print(F("<!DOCTYPE html><style>html{background: #cee2e1; /* Old browsers */background: -webkit-linear-gradient(top,  #6ec1e4 0%,#ffffff 100%); background: linear-gradient(to bottom,  #6ec1e4 0%,#ffffff 100%); background-repeat:  no-repeat;background-size:  cover;div.buttons{float: left;}font-family: Verdana,Helvetica,Sans;color: #666;}a{text-decoration: none; color: #666; }.bold{color:  #000;}a:visited{color: #ffffff;}.base{max-width: 900px; margin: 0 auto;}.header{height: 120px;}.logo{float: left;  font-size: 22px;}.menu{float:right;color: #ffffff; margin-top: 56px}.content{border:  #666 solid 1px;border-radius: 0px;padding: 6px;background-color:  #ffffff;}.inset {color: #ffffff;text-shadow: -1px -1px 1px #000, 1px 1px 1px #fff;}ul.hr {margin: 0; padding: 2px; }ul.hr li {display: inline; border-right: 1px solid #000; padding-right: 6px;text-transform:  uppercase;font-weight:  400;}ul.hr li:last-child { border-right: none;}a.knopka {float: left;color: #fff;text-decoration: none; user-select: none; padding: .7em 1.5em; margin-right: 10px; margin-bottom: 10px; outline: none; } a.label {float: left;color: #fff;text-decoration: none; user-select: none; padding: .7em 1em; margin-right: 3px; margin-bottom: 10px; outline: none; } a.knopka:hover { background: rgb(232,95,76); } .blue {background: rgb(56, 162, 212); } .red { background: rgb(212,75,56); } a.knopka:active { background: rgb(152,15,0); } </style><html><head><title>CARWASH360</title><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"></head><body><div class=\"base\"><div class=\"header\"><div class=\"logo\"><h1 class=\"inset\">CARWASH360</h1></div><div class=\"menu\"><ul class=\"hr inset\"><a href=\"/\"><li>Главная</li></a><a href=\"/help\"><li>Помощь</li></a><a href=\"/contacts\"><li>Контакты</li></a></ul></div></div><div class=\"content\">"));
+  server.print(F("<!DOCTYPE html><style>html{background: #cee2e1; /* Old browsers */background: -webkit-linear-gradient(top,  #6ec1e4 0%,#ffffff 100%); background: linear-gradient(to bottom,  #6ec1e4 0%,#ffffff 100%); background-repeat:  no-repeat;background-size:  cover;div.buttons{float: left;}font-family: Verdana,Helvetica,Sans;color: #666;}a{text-decoration: none; color: #666; }.bold{color:  #000;}a:visited{color: #ffffff;}.base{max-width: 900px; margin: 0 auto;}.header{height: 120px;}.logo{float: left;  font-size: 22px;}.menu{float:right;color: #ffffff; margin-top: 56px}.content{border:  #666 solid 1px;border-radius: 0px;padding: 6px;background-color:  #ffffff;}.inset {color: #ffffff;text-shadow: -1px -1px 1px #000, 1px 1px 1px #fff;}ul.hr {margin: 0; padding: 2px; }ul.hr li {display: inline; border-right: 1px solid #000; padding-right: 6px;text-transform:  uppercase;font-weight:  400;}ul.hr li:last-child { border-right: none;}a.knopka {float: left;color: #fff;text-decoration: none; user-select: none; padding: .7em 1.5em; margin-right: 10px; margin-bottom: 10px; outline: none; } a.label {float: left;color: #fff;text-decoration: none; user-select: none; padding: .7em 1em; margin-right: 3px; margin-bottom: 10px; outline: none; } a.knopka:hover { background: rgb(232,95,76); } .blue {background: rgb(56, 162, 212); } .red { background: rgb(212,75,56); } a.knopka:active { background: rgb(152,15,0); } </style><html><head><title>CARWASH360</title><link rel=\"icon\" href=\"http://carwash360.ru/wp-content/uploads/2019/10/cropped-favicon-32x32.png\" sizes=\"32x32\"><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"></head><body><div class=\"base\"><div class=\"header\"><div class=\"logo\"><h1 class=\"inset\">CARWASH360</h1></div><div class=\"menu\"><ul class=\"hr inset\"><a href=\"/\"><li>Главная</li></a><a href=\"/help\"><li>Помощь</li></a><a href=\"/setup\"><li>Настройки</li></a></ul></div></div><div class=\"content\">"));
   server.print(F("<h2>"));
   server.print(F("Памятка по get командам"));
   server.print(F("</h2>"));
