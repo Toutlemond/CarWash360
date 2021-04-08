@@ -116,7 +116,7 @@ void checkDHT11() {
   } else {
     hic = dht1.computeHeatIndex(temp, humid, false);
     hic2 = dht2.computeHeatIndex(temp2, humid2, false);
-#if (DEBUG == 1)
+#if (DEBUGTEMP == 1)
     Serial.print(F("Temp -"));
     Serial.println(temp);
     

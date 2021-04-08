@@ -129,30 +129,78 @@ void commandsStatus(WebServer &server) {
 }
 void commandSetupForm(WebServer &server) {
   server.printP(header);
-  server.print(F("<form method=\"GET\" action=\"/setsrvip\">\n"));
+  server.print(F("<form method=\"POST\" action=\"/setup\">\n"));
   server.print(F("<h4>Настройки контроллера</h4>\n"));
   server.print(F("<hr>\n"));
-  server.print(F("<p>Новый ip адрес терминала: <span class=\"bold\"><input style=\"width: 22px;\" type=\"text\" name=\"srvip1\">.\n"));
-  server.print(F("<input style=\"width: 22px;\" type=\"text\" name=\"srvip2\">.\n"));
-  server.print(F("<input style=\"width: 22px;\" type=\"text\" name=\"srvip3\">.\n"));
-  server.print(F("<input style=\"width: 22px;\" type=\"text\" name=\"srvip4\"></span></p>\n"));
-  server.print(F("</span></p>\n"));
 
-  server.print(F("<p>Время BusyTimer (сек) -  <span class=\"bold\">.\n"));
-  server.print(F("<input style=\"width: 120px;\" value =\"180\" type=\"text\" name=\"busytimer\">.\n"));
-  server.print(F("</span></p>\n"));
+  //server.print(F("<p>Новый ip адрес терминала: <span class=\"bold\"><input style=\"width: 22px;\" type=\"text\" name=\"srvip1\">.\n"));
+  //server.print(F("<input style=\"width: 22px;\" type=\"text\" name=\"srvip2\">.\n"));
+  //server.print(F("<input style=\"width: 22px;\" type=\"text\" name=\"srvip3\">.\n"));
+  //server.print(F("<input style=\"width: 22px;\" type=\"text\" name=\"srvip4\"></span></p>\n"));
+  //server.print(F("</span></p>\n"));
 
-  server.print(F("<p>Пороговое значение Логической единицы -  <span class=\"bold\">.\n"));
-  server.print(F("<input style=\"width: 120px;\" value =\"35\" type=\"text\" name=\"humidon\">.\n"));
-  server.print(F("</span></p>\n"));
+  server.print(F("<input hidden style=\"width: 120px;\" value =\"ElChupacabra\" type=\"text\" name=\"token\">\n"));
 
-  server.print(F("<p>Влажность включения вытяжки (%) -  <span class=\"bold\">.\n"));
-  server.print(F("<input style=\"width: 120px;\" value =\"75\" type=\"text\" name=\"humidon\">.\n"));
-  server.print(F("</span></p>\n"));
+  server.print(F("<p>Название контроллера 10 символов lat -\n"));
+  server.print(F("<input style=\"width: 120px;\" value =\""));
+  server.print(cname);
+  server.print(F("\" type=\"text\" name=\"cname\">\n"));
+  server.print(F("</p>\n"));
 
-  server.print(F("<p>Температура закрытия ворот (гр.С.) -  <span class=\"bold\">.\n"));
-  server.print(F("<input style=\"width: 120px;\" value =\"5\" type=\"text\" name=\"gatetemp\">.\n"));
-  server.print(F("</span></p>\n"));
+  server.print(F("<p>Время короткого BusyTimer (сек) - \n"));
+  server.print(F("<input style=\"width: 120px;\" value =\""));
+  server.print(bts);
+  server.print(F("\" type=\"text\" name=\"bts\">\n"));
+  server.print(F("</p>\n"));
+
+  server.print(F("<p>Время длинного BusyTimer (сек) -  \n"));
+  server.print(F("<input style=\"width: 120px;\" value =\""));
+  server.print(btl);
+  server.print(F("\" type=\"text\" name=\"btl\">\n"));
+  server.print(F("</p>\n"));
+
+  server.print(F("<p>Пороговое значение Логической единицы -   \n"));
+  server.print(F("<input style=\"width: 120px;\" value =\""));
+  server.print(lo);
+  server.print(F("\" type=\"text\" name=\"lo\">\n"));
+  server.print(F("</p>\n"));
+
+  server.print(F("<p>Влажность включения вытяжки (%) -   \n"));
+  server.print(F("<input style=\"width: 120px;\" value =\""));
+  server.print(hon);
+  server.print(F("\" type=\"text\" name=\"hon\">\n"));
+  server.print(F("</p>\n"));
+
+  server.print(F("<p>Температура закрытия ворот (гр.С.) - \n"));
+  server.print(F("<input style=\"width: 120px;\" value =\""));
+  server.print(gt);
+  server.print(F("\" type=\"text\" name=\"gt\">\n"));
+  server.print(F("</p>\n"));
+
+  server.print(F("<p>Отправка события старт на телеграм -   \n"));
+  server.print(F("<input "));
+  if (telerst == 1) {
+    server.print(F(" CHECKED "));
+  }
+  server.print(F("style=\"width: 120px;\" value =\"1\" type=\"checkbox\" name=\"telerst\">\n"));
+  server.print(F("</p>\n"));
+
+  server.print(F("<p>Отправка закрытия ворот по температуре  -   \n"));
+  server.print(F("<input "));
+    if (telegt == 1) {
+    server.print(F(" CHECKED "));
+  }
+  server.print(F("style=\"width: 120px;\" value =\"1\" type=\"checkbox\" name=\"telegt\">\n"));
+  server.print(F("</p>\n"));
+
+  server.print(F("<p>Отправка включения вытяжки по влажности  -   \n"));
+  server.print(F("<input"));
+    if (telehumon == 1) {
+    server.print(F(" CHECKED "));
+  }
+  server.print(F("style=\"width: 120px;\" value =\"1\" type=\"checkbox\" name=\"telehumon\">\n"));
+  server.print(F("</p>\n"));
+
   // Далее завершение формы
   server.print(F("<input type=\"submit\" value=\"Сохранить\">\n"));
   server.print(F("</form>\n"));

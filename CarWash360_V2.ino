@@ -27,18 +27,11 @@
 
  **/
 
-/// Адрессация епрома
-//10 - ConfigFlag - Если есть то конфиг писался
-//21,22,23,24 - ServerIP
-//100 - Время БизиТаймера 
-//102 - Влажность для включения вытяжки
-//103 - Температура для закрытия врат
-//150-159  - Тест - Название первой кнопки
 
- 
-#define DEBUG 1 // вывод в консоль
 
-#define TELEGRAMM 0 // Отправка в телегу
+#define DEBUG 0 // вывод в консоль
+
+#define DEBUGTEMP 0 // вывод в консоль температуры раз в 5 секунд - порой бесит
 
 #include "SPI.h"
 #include "Ethernet.h"
@@ -59,6 +52,31 @@ float humid2 ;
 float temp2;
 float hic2;
 
+/// Адрессация епрома
+//10 - ConfigFlag - Если есть то конфиг писался
+//21,22,23,24 - ServerIP
+//100 - Время КороткогоБизиТаймера
+//102 - Время БизиТаймера
+//104 - Пороговое значение
+//106 - Влажность для включения вытяжки
+//108 - Температура для закрытия врат
+//110 -Отправка события старт на телеграм
+//112 -Отправка закрытия ворот по темпаратуре
+//114 - Отправка включения вытяжки по влажност
+//150-169  - Название контроллера
+//Параметры хранимые в EEPROM
+int bts = 47;
+int btl = 120;
+int lo = 35;
+int hon = 85;
+int gt = 5;
+int telerst = 0;
+int telegt = 0;
+int telehumon = 0;
+String cname = "CarWash360";
+
+int humidOnMsgWasSended = 0;
+int humidOffMsgWasSended = 0;
 
 // мак адрес
 static uint8_t mac[] = {
@@ -94,13 +112,14 @@ int endinPin = 52;
 //Массив названий Операций
 char* operateStrings[] = {"Мойка-1", "Мойка-2", "Пауза", "Стоп", "пусто", "Врата вверх", "Врата вниз", "Свет", "Вытяжка"};
 //массив Пинов
-int operatePins[] = {31, 33, 35, 37, 39, 41, 43, 45,29};
+int operatePins[] = {31, 33, 35, 37, 39, 41, 43, 45, 29};
 //массив Клик или ON/OFF
-int operateOnOff[] = {0, 0, 0, 0, 0, 0, 0, 1,1};
-//Массив инвертирована ли логика - зажигаем НУЛЕМ. Все пины на модуле. 
-int inverceLogic[] = {1, 1, 1, 1, 1, 1, 1, 1,0};
+int operateOnOff[] = {0, 0, 0, 0, 0, 0, 0, 1, 1};
+//Массив инвертирована ли логика - зажигаем НУЛЕМ. Все пины на модуле.
+int inverceLogic[] = {1, 1, 1, 1, 1, 1, 1, 1, 0};
 int busy = 0;
 int busytimer = 0;
+int busytimer2 = 0;
 int lightSwitch = 0;
 
 //Массив названий Статусов
@@ -108,7 +127,7 @@ char* washStatusStrings[] = {"Вперед", "Стоп", "Назад", "Эмул
 char* washStatusEngStrings[] = {"wash", "stop", "goback", "emulse", "realwash", "shampoo", "wax", "dry"};
 //Пороговое значение показывающее что на пине Логическая 1
 //int borderValue = 200;
-int borderValue = 35;
+int borderValue = 35; //lo
 //массив Пинов
 //используется массив а не простой перебор для того чтобы можно было просто перенести пины в случае чего
 //char* washStatusPins[] = {"A8", "A9", "A10", "A11", "A12", "A13", "A14", "A15"};
@@ -132,7 +151,7 @@ const char data_message[] PROGMEM = {"Hello!"};
 P(location_info) = "Controller - CarWash360";
 P(pin_info) = "D2 - DHT-11, D3 - DHT-11 <br> <br>D44-D51 - outputs";
 P(header) = "<!DOCTYPE html><style>html{background: #cee2e1; /* Old browsers */background: -webkit-linear-gradient(top,  #6ec1e4 0%,#ffffff 100%); background: linear-gradient(to bottom,  #6ec1e4 0%,#ffffff 100%); background-repeat:  no-repeat;background-size:  cover;div.buttons{float: left;}font-family: Verdana,Helvetica,Sans;color: #666;}a{text-decoration: none; color: #666; }.bold{color:  #000;}a:visited{color: #ffffff;}.base{max-width: 900px; margin: 0 auto;}.header{height: 120px;}.logo{float: left;  font-size: 22px;}.menu{float:right;color: #ffffff; margin-top: 56px}.content{border:  #666 solid 1px;border-radius: 0px;padding: 6px;background-color:  #ffffff;}.inset {color: #ffffff;text-shadow: -1px -1px 1px #000, 1px 1px 1px #fff;}ul.hr {margin: 0; padding: 2px; }ul.hr li {display: inline; border-right: 1px solid #000; padding-right: 6px;text-transform:  uppercase;font-weight:  400;}ul.hr li:last-child { border-right: none;}a.knopka {float: left;color: #fff;text-decoration: none; user-select: none; padding: .7em 1.5em; margin-right: 10px; margin-bottom: 10px; outline: none; } a.label {float: left;color: #fff;text-decoration: none; user-select: none; padding: .7em 1em; margin-right: 3px; margin-bottom: 10px; outline: none; } a.knopka:hover { background: rgb(232,95,76); } .blue {background: rgb(56, 162, 212); } .red { background: rgb(212,75,56); } a.knopka:active { background: rgb(152,15,0); } </style><html><head><title>CARWASH360</title><link rel=\"icon\" href=\"http://carwash360.ru/wp-content/uploads/2019/10/cropped-favicon-32x32.png\" sizes=\"32x32\"><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"></head><body><div class=\"base\"><div class=\"header\"><div class=\"logo\"><h1 class=\"inset\">CARWASH360</h1></div><div class=\"menu\"><ul class=\"hr inset\"><a href=\"/\"><li>Главная</li></a><a href=\"/help\"><li>Помощь</li></a><a href=\"/setup\"><li>Настройки</li></a></ul></div></div><div class=\"content\">";
-  
+
 P(version_info) = VERSION_STRING ". Compile date: " COMPILE_DATE_STRING;
 P(footer) = "</div></body></html>";
 
@@ -191,7 +210,12 @@ void setup() {
   //  Ethernet.begin(mac, ip); // Инициализируем Ethernet Shield
   // give the Ethernet shield a second to initialize:
   delay(5000);
-  
+
+  if (EEPROM.read(10) != 255) {
+    updateSettingFromEprom();
+    borderValue = lo;
+  }
+
   //DHCP НЕ потребовался. Пока отключим
   // Но оставим код.
 #if (DEBUG == 1)
@@ -248,50 +272,10 @@ void setup() {
 #endif
 
 
-  char server[] = "www.2.toutlem.z8.ru";
-
-  EthernetClient client;
-  // give the Ethernet shield a second to initialize:
-  delay(3000);
-#if (DEBUG == 1)
-  Serial.println(F("connecting..."));
-#endif
-  // if you get a connection, report back via serial:
-
-  int connCount = 0;
-  int statusConn;
-  while (connCount < 20) {
-    statusConn = client.connect(server, 80);
-#if (DEBUG == 1)
-    Serial.println(statusConn);
-    Serial.print(".");
-#endif
-    delay(100);
-
-    if (statusConn == 1) {
-      break;
-#if (DEBUG == 1)
-      Serial.println(".");
-#endif
-    }
-#if (DEBUG == 1)
-    Serial.print(connCount);
-#endif
-    connCount++;
+  if (telerst == 1) {
+    sendIpToTlegramm();
   }
-  if (statusConn == 1) {
-#if (TELEGRAMM == 1)
-    sendIpToTlegramm(client);
-#endif
 
-
-  }
-  else {
-    // kf you didn't get a connection to the server:
-#if (DEBUG == 1)
-    Serial.println(F("connection failed"));
-#endif
-  }
 
   wdt_enable (WDTO_8S); // Для тестов не рекомендуется устанавливать значение менее 8 сек.
 
@@ -307,11 +291,13 @@ void setup() {
   }
 
   // Настройка 29ого пина для реле
-   pinMode(29, OUTPUT);
-   digitalWrite(29, LOW);
-   Serial.print("29");
-   Serial.print(" - ");
-    Serial.println("LOW");
+  pinMode(29, OUTPUT);
+  digitalWrite(29, LOW);
+  #if (DEBUG == 1)
+  Serial.print("29");
+  Serial.print(" - ");
+  Serial.println("LOW");
+  #endif
   // Настройка портов на вывод
   /*  for (int thisPin = startinPin; thisPin <= endinPin; thisPin++)  {
       pinMode(thisPin, OUTPUT);
@@ -356,6 +342,8 @@ void loop() {
   delay(200);
   if (millis() - previousMillis > 5000) {
     checkDHT11();
+    CheckHumid();
+    //CheckGateTempHumid();
     previousMillis = millis();
   }
   if (millis() - previousMillisBusy1 > 1000) {
@@ -382,10 +370,10 @@ void loop() {
       if (stvalue > borderValue) {
         if (i == 2) {
           // Serial.println("1");
-          busytimer = 180;
+          busytimer = btl;
         } else {
           //Serial.println("1");
-          busytimer = 60;
+          busytimer = bts;
         }
 
 

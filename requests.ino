@@ -199,6 +199,7 @@ void gateRequest(WebServer &server, WebServer::ConnectionType type, char *url_ta
       }
     }
   }
+
 }
 void lightRequest(WebServer &server, WebServer::ConnectionType type, char *url_tail, bool tail_complete)
 {
@@ -271,8 +272,22 @@ void setupRequest(WebServer &server, WebServer::ConnectionType type, char *url_t
   int  name_len;
   int validRequest = 0;
   char value[VALUELEN];
+  int valueint;
   int value_len;
   int chousenPin;
+
+
+  /// Адрессация епрома
+  //10 - ConfigFlag - Если есть то конфиг писался
+  //21,22,23,24 - ServerIP
+  //100 - Время КороткогоБизиТаймера
+  //102 - Время БизиТаймера
+  //104 - Пороговое значение
+  //106 - Влажность для включения вытяжки
+  //108 - Температура для закрытия врат
+  //150-159  - Тест - Название контроллера
+  //Установим что конфиг был записан
+  EEPROM.put(10, 1);
 
   server.httpSuccess();  // this line sends the standard "we're all OK" headers back to the browser
 
@@ -281,10 +296,96 @@ void setupRequest(WebServer &server, WebServer::ConnectionType type, char *url_t
   if (type == WebServer::HEAD) {
     commandSetupForm(server);
   }
+  if (type == WebServer::POST) {
 
+    while (server.readPOSTparam(name, NAMELEN, value, VALUELEN))
+    {
+      String strval(value);
+      #if (DEBUG == 1)
+      Serial.print(name);
+      Serial.print("-");
+      Serial.println(strval);
+      #endif
+
+      if (strcmp(name, "bts") == 0) {
+        bts = strval.toInt();
+        EEPROM.put(100, strval.toInt());
+#if (DEBUG == 1)
+
+        Serial.println("EEPROM writen");
+#endif
+      }
+      if (strcmp(name, "btl") == 0) {
+        btl = strval.toInt();
+
+        EEPROM.put(102, strval.toInt());
+#if (DEBUG == 1)
+        Serial.println("EEPROM writen");
+#endif
+      }
+      if (strcmp(name, "lo") == 0) {
+        lo = strval.toInt();
+
+        EEPROM.put(104, strval.toInt());
+#if (DEBUG == 1)
+        Serial.println("EEPROM writen");
+#endif
+      }
+      if (strcmp(name, "hon") == 0) {
+        hon = strval.toInt();
+
+        EEPROM.put(106, strval.toInt());
+#if (DEBUG == 1)
+        Serial.println("EEPROM writen");
+#endif
+      }
+      if (strcmp(name, "gt") == 0) {
+        gt = strval.toInt();
+
+        EEPROM.put(108, strval.toInt());
+#if (DEBUG == 1)
+        Serial.println("EEPROM writen");
+#endif
+      }
+      if (strcmp(name, "telerst") == 0) {
+        telerst = strval.toInt();
+
+        EEPROM.put(110, strval.toInt());
+#if (DEBUG == 1)
+        Serial.println("EEPROM writen");
+#endif
+      }
+      if (strcmp(name, "telegt") == 0) {
+        telegt = strval.toInt();
+
+        EEPROM.put(112, strval.toInt());
+#if (DEBUG == 1)
+        Serial.println("EEPROM writen");
+#endif
+      }
+      if (strcmp(name, "telehumon") == 0) {
+        telehumon = strval.toInt();
+
+        EEPROM.put(114, strval.toInt());
+#if (DEBUG == 1)
+        Serial.println("EEPROM writen");
+#endif
+      }
+      if (strcmp(name, "cname") == 0) {
+        cname = strval;
+        stringEpromWrite(strval, 150, 169);
+#if (DEBUG == 1)
+        Serial.println("EEPROM writen");
+#endif
+      }
+
+    }
+  }
 
   if (strlen(url_tail)) {
+#if (DEBUG == 1)
     Serial.println(url_tail);
+#endif
 
     while (strlen(url_tail)) // Разбор URI на составные части (выборка параметров)
     {
@@ -299,28 +400,25 @@ void setupRequest(WebServer &server, WebServer::ConnectionType type, char *url_t
             errorResponse(server, "wrong token");
           }
         }
+
+#if (DEBUG == 1)
         Serial.print(name);
         Serial.print(" - ");
         Serial.println(value);
-        
-        if (validRequest == 1) {
+#endif
+        if (validRequest == 1) { // Пока отключим проверку валидности реквеста
 
-          if (strcmp(name, "action") == 0) {
-            if (strcmp(value, "on") == 0) {
 
-            } else  if (strcmp(value, "off") == 0) {
-
-            } else {
-              errorResponse(server, "wrong action");
-            }
-          }
         }
       }
     }
-  } else {
-     Serial.println("NoParams");
-     commandSetupForm(server);
+  }   else {
+#if (DEBUG == 1)
+    Serial.println("NoParams");
+#endif
+    commandSetupForm(server);
   }
+
 
 }
 
