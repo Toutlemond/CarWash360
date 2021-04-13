@@ -72,6 +72,16 @@ void updateSettingFromEprom() {
   Serial.print("telehumon - ");
   Serial.println(telehumon);
 #endif
+  EEPROM.get(116, telestrt);
+#if (DEBUG == 1)
+  Serial.print("telestrt - ");
+  Serial.println(telestrt);
+#endif
+  EEPROM.get(118, telestop);
+#if (DEBUG == 1)
+  Serial.print("telestop - ");
+  Serial.println(telestop);
+#endif
   cname = stringEpromRead(150, 169);
 #if (DEBUG == 1)
   Serial.print("cname - ");

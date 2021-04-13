@@ -82,6 +82,13 @@ void pinLClick(int pin, int longTime) {
   }
   //Serial.print("WrongPin");
 }
+
+void commandsGateUp(WebServer &server) {
+  //Короче тут надо находить какие пины сейчас отвечают за ворота и кликать или
+  //Пины прописать жестко но вот их выбор храним в конфиге.
+    digitalWrite(gParamValue, HIGH);
+
+}
 void washOperating(WebServer &server) {
   int i;
   int count = sizeof(operatePins) / sizeof(char *);

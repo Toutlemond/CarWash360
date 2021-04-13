@@ -177,28 +177,54 @@ void commandSetupForm(WebServer &server) {
   server.print(F("\" type=\"text\" name=\"gt\">\n"));
   server.print(F("</p>\n"));
 
+  server.print(F("<p>Режим работы ворот/шлакбаума -  \n"));
+  server.print(F("<select name=\"gatetype\" style=\"width: 220px;\" >"));
+  server.print(F("<option value=\"1\">Ворота</option>\n"));
+  server.print(F("<option value=\"2\">Шлакбаум </option>\n"));
+  server.print(F("<option value=\"3\">Ворота и шлакбаум</option>\n"));
+  server.print(F("</select >"));
+
+  server.print(F("</p>\n"));
+
+
   server.print(F("<p>Отправка события старт на телеграм -   \n"));
   server.print(F("<input "));
   if (telerst == 1) {
     server.print(F(" CHECKED "));
   }
-  server.print(F("style=\"width: 120px;\" value =\"1\" type=\"checkbox\" name=\"telerst\">\n"));
+  server.print(F(" style=\"width: 120px;\" value =\"1\" type=\"checkbox\" name=\"telerst\">\n"));
   server.print(F("</p>\n"));
 
   server.print(F("<p>Отправка закрытия ворот по температуре  -   \n"));
   server.print(F("<input "));
-    if (telegt == 1) {
+  if (telegt == 1) {
     server.print(F(" CHECKED "));
   }
-  server.print(F("style=\"width: 120px;\" value =\"1\" type=\"checkbox\" name=\"telegt\">\n"));
+  server.print(F(" style=\"width: 120px;\" value =\"1\" type=\"checkbox\" name=\"telegt\">\n"));
   server.print(F("</p>\n"));
 
   server.print(F("<p>Отправка включения вытяжки по влажности  -   \n"));
-  server.print(F("<input"));
-    if (telehumon == 1) {
+  server.print(F("<input "));
+  if (telehumon == 1) {
     server.print(F(" CHECKED "));
   }
-  server.print(F("style=\"width: 120px;\" value =\"1\" type=\"checkbox\" name=\"telehumon\">\n"));
+  server.print(F(" style=\"width: 120px;\" value =\"1\" type=\"checkbox\" name=\"telehumon\">\n"));
+  server.print(F("</p>\n"));
+
+  server.print(F("<p>Отправка начала мойки  -   \n"));
+  server.print(F("<input "));
+  if (telestrt == 1) {
+    server.print(F(" CHECKED "));
+  }
+  server.print(F(" style=\"width: 120px;\" value =\"1\" type=\"checkbox\" name=\"telestrt\">\n"));
+  server.print(F("</p>\n"));
+
+  server.print(F("<p>Отправка окончания мойки  -   \n"));
+  server.print(F("<input "));
+  if (telestop == 1) {
+    server.print(F(" CHECKED "));
+  }
+  server.print(F(" style=\"width: 120px;\" value =\"1\" type=\"checkbox\" name=\"telestop\">\n"));
   server.print(F("</p>\n"));
 
   // Далее завершение формы

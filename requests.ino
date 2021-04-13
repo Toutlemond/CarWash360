@@ -301,11 +301,24 @@ void setupRequest(WebServer &server, WebServer::ConnectionType type, char *url_t
     while (server.readPOSTparam(name, NAMELEN, value, VALUELEN))
     {
       String strval(value);
-      #if (DEBUG == 1)
+#if (DEBUG == 1)
       Serial.print(name);
       Serial.print("-");
       Serial.println(strval);
-      #endif
+#endif
+      //Чекбоксы если выключены не передаются
+      //выставим их в нули сразу.
+      //если они таки переданы они установятся в 1
+      telerst = 0;
+      EEPROM.put(110, 0);
+      telegt = 0;
+      EEPROM.put(112, 0);
+      telehumon = 0;
+      EEPROM.put(114, 0);
+      telestrt = 0;
+      EEPROM.put(116, 0);
+      telestop = 0;
+      EEPROM.put(118, 0);
 
       if (strcmp(name, "bts") == 0) {
         bts = strval.toInt();
@@ -367,6 +380,22 @@ void setupRequest(WebServer &server, WebServer::ConnectionType type, char *url_t
         telehumon = strval.toInt();
 
         EEPROM.put(114, strval.toInt());
+#if (DEBUG == 1)
+        Serial.println("EEPROM writen");
+#endif
+      }
+      if (strcmp(name, "telestrt") == 0) {
+        telestrt = strval.toInt();
+
+        EEPROM.put(116, strval.toInt());
+#if (DEBUG == 1)
+        Serial.println("EEPROM writen");
+#endif
+      }
+      if (strcmp(name, "telestop") == 0) {
+        telestop = strval.toInt();
+
+        EEPROM.put(118, strval.toInt());
 #if (DEBUG == 1)
         Serial.println("EEPROM writen");
 #endif

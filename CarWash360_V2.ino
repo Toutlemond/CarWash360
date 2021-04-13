@@ -73,6 +73,8 @@ int gt = 5;
 int telerst = 0;
 int telegt = 0;
 int telehumon = 0;
+int telestrt = 0;
+int telestop = 0;
 String cname = "CarWash360";
 
 int humidOnMsgWasSended = 0;
