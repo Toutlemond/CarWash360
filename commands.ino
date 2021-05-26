@@ -99,7 +99,8 @@ void washOperating(WebServer &server) {
 }
 void washStatuses(WebServer &server) {
   int i;
-  for (i = 0; i < 9; i++) {
+  int count = sizeof(washStatusPins) / sizeof(char *);
+  for (i = 0; i < count; i++) {
     generateLabel(server, washStatusPins[i], washStatusStrings[i], washStatusOnOff[i]);
   }
   server.print("<BR>");
